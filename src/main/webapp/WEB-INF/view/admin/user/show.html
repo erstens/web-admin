@@ -1,0 +1,214 @@
+<%include("/view/common/common.nav.html"){}%>
+<div class="easyui-layout" data-options="fit:true">
+    <!-- Begin of toolbar -->
+    <div id="wu-toolbar-0">
+        <div class="wu-toolbar-button">
+            <a href="#" id="btnAdd0" class="easyui-linkbutton" >添加</a>
+            <a href="#" id="btnDel0" class="easyui-linkbutton" >删除</a>
+        </div>
+        <div class="wu-toolbar-search">
+            <form id="queryForm0">
+                <label>用户名：</label><input class="easyui-textbox" name="uname" style="width:150px">
+                <label>起始时间：</label><input  class="Wdate" type="text" onFocus="WdatePicker({skin:'whyGreen',dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false,readOnly:true})" name="startTime" style="width:150px">
+                <label>结束时间：</label><input class="Wdate" type="text" onFocus="WdatePicker({skin:'whyGreen',dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false,readOnly:true})" name="endTime" style="width:150px">
+                <label>是否启用：</label>
+                <select class="easyui-combobox" name="isUsed" panelHeight="auto" data-options="editable:false" style="width:150px">
+                    <option value="">请选择</option>
+                    <option value="1">是</option>
+                    <option value="0">否</option>
+                </select>
+                <a id="btnSearch0" >检索</a>
+                <a id="btnReset0" >重置</a>
+            </form>
+        </div>
+    </div>
+    <!-- End of toolbar -->
+    <table id="dg-data0" class="easyui-datagrid" toolbar="#wu-toolbar-0"></table>
+</div>
+<!-- Begin of easyui-dialog -->
+<div id="form-dialog0" style="width:400px; padding:10px;">
+    <form id="fill-form0" method="post">
+        <table>
+            <tr>
+                <td width="60" align="right">用户名:</td>
+                <td><input id="uname" type="text" name="uname" class="easyui-textbox"/></td>
+            </tr>
+            <tr>
+                <td align="right">密  码:</td>
+                <td><input id="pwd" type="text" name="pwd" class="easyui-textbox" /></td>
+            </tr>
+            <tr>
+                <td width="60" align="right">真实姓名:</td>
+                <td><input id="realName" type="text" name="real_name" class="easyui-textbox"/></td>
+            </tr>
+            <tr>
+                <td align="right">是否启用:</td>
+                <td>
+                    <select class="easyui-combobox" id="isUsed" name="is_used" panelHeight="auto" >
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td width="60" align="right">角色:</td>
+                <td><input id="rid" type="text" name="rid" class="easyui-combobox"/></td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="hidden" name="uid" />
+                    <input type="hidden" name="create_time" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="dgRole" style="width:400px; padding:10px;">
+    <form id="fmRole" method="post">
+        <table>
+            <tr>
+                <td width="60" align="right">角色:</td>
+                <td><input id="role" type="text" name="rid" class="easyui-textbox"/></td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script type="text/javascript" src="script/common/abnormal-crud.js"></script>
+<!-- End of easyui-dialog -->
+<!-- 通用 -->
+<script type="text/javascript">
+    //本页初始化
+    var Init = {
+        form:{
+            //新增/修改的表单字段初始化
+            uname:function(){
+                $('#uname').textbox({
+                    required:true,
+                    prompt:'非汉字,20个字符以内',
+                    validType:'name',
+                    width:150,
+                    missingMessage:'请输入用户名'
+                });
+            },
+            pwd:function(){
+                $('#pwd').textbox({
+                    required:true,
+                    width:150,
+                    prompt:'请输入密码',
+                    validType:'pwd',
+                    missingMessage:'请输入密码'
+                });
+            },
+            isUsed:function() {
+                $('#isUsed').combobox({
+                    required:true,
+                    editable:false,
+                    value:1,
+                    width:150,
+                    valueField: 'value',
+                    textField: 'label',
+                    data: [{
+                        label: '是',
+                        value: 1
+                    },{
+                        label: '否',
+                        value: 0
+                    }]
+                });
+            },
+            realName:function(){
+                $('#realName').textbox({
+                    required:true,
+                    prompt:'中文汉字',
+                    validType:'name',
+                    width:150,
+                    missingMessage:'请输入中文'
+                });
+            },
+            rid:function(){
+                $('#rid').combobox({
+                    required:true,
+                    editable:false,
+                    value:1,
+                    width:150,
+                    valueField: 'rid',
+                    textField: 'txt_name',
+                    loader: function (param, success, error) {
+                        $.ajax({
+                            url: 'role/getAll',
+                            type: 'post',
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data.success) {
+                                    var ary = data.data ;
+                                    ary[0].selected = true ;
+                                    success(ary);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+        }
+    };
+    //datagrid数据列
+    var Grid = {
+        getColumns : function() {
+            return [[
+                { field:'uid',checkbox:true},
+                { field:'uname',title:'用户名',resizable:false},
+                { field:'pwd',title:'密码',resizable:false},
+                { field:'real_name',title:'真实姓名',resizable:false},
+                { field:'is_used',title:'是否使用',resizable:false,formatter: function(value,row,index){
+                    if (value * 1 === 1){
+                        return "启用";
+                    } else {
+                        return "禁用";
+                    }
+                }
+                },
+                { field:'create_time',title:'创建时间',resizable:false},
+                { field:'_opt',title:'操作',resizable:false,
+                    formatter: function (value, row, index) {
+                        return '<a href="#" style="color:blue" onclick="AbCRUD.edit(' + row.uid + ')">修改</a>';
+                    }
+                }
+            ]]
+        }
+    };
+    //常量
+    var CONSTANT = {
+        _URL:{
+            _LIST:'user/list',
+            _SAVE:'user/save',
+            _UPDATE:'user/update',
+            _DEL:'user/del',
+            _EDIT:'user/edit'
+        },
+        _GRID:{
+            _IDFIELD:'uid',
+            _COLUMNS:Grid.getColumns()
+        },
+        _ID:{
+            _GRID:'dg-data0',
+            _QUERYFORM:'queryForm0',
+            _BTNSEARCH:'btnSearch0',
+            _BTNRESET:'btnReset0',
+            _FORMDIALOG:'form-dialog0',
+            _BTNADD:'btnAdd0',
+            _BTNDEL:'btnDel0',
+            _FILLFORM:'fill-form0',
+            _WUTOOLBAR:'wu-toolbar-0'
+
+        }
+    };
+    $(function(){
+        AbCRUD.init(CONSTANT) ;
+
+        Init.form.uname();
+        Init.form.pwd();
+        Init.form.isUsed();
+        Init.form.realName();
+        Init.form.rid();
+    });
+</script>
+<!-- 自定义 -->

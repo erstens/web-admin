@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%include("/view/common/common.nav.html"){}%>
+</head>
+<body>
+    <div id="dlg" class="easyui-dialog" style="padding:20px">
+        <div class="easyui-layout">
+            <form id="fill-form" method="post" method="post" action="#">
+                <table style="width:100%;text-align: center;">
+                    <tr>
+                        <td width="60" align="right">用户名:</td>
+                        <td><input id="uname" type="text" name="uname" class="easyui-textbox" /></td>
+                    </tr>
+                    <tr>
+                        <td align="right">密  码:</td>
+                        <td><input id="pwd" type="text" name="pwd" class="easyui-textbox" /></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+</body>
+<div id="bb" style="text-align: center">
+    <a id="submit" href="#" class="easyui-linkbutton" data-options="width:100">登  陆</a>
+</div>
+<script>
+    $(function(){
+        $('#dlg').dialog({
+            title:'登录界面',
+            iconCls:'icon-save',
+            width:400,
+            height:230,
+            modal: true,
+            closable:false,
+            closed:false,
+            shadow:true,
+            buttons:'#bb'
+        });
+        $('#dlg').dialog('center') ;
+
+        $('#uname').textbox({
+            required:true,
+            height:30,
+            prompt:'请输入登录名',
+            width:200,
+            missingMessage:'请输入登录名'
+        });
+        $('#pwd').passwordbox({
+            required:true,
+            height:30,
+            prompt:'请输入密码',
+            width:200,
+            missingMessage:'请输入密码'
+        });
+
+        $('#submit').linkbutton({
+            width:100,
+            text:'登  录',
+            iconCls:'icon-ok',
+            onClick:function(){
+                LoginForm.submit();
+            }
+
+        });
+        //回车事件
+        $('#uname').textbox('textbox').keydown(function (e) {
+            if (e.keyCode == 13) {
+                LoginForm.submit();
+            }
+        });
+        $('#pwd').textbox('textbox').keydown(function (e) {
+            if (e.keyCode == 13) {
+                LoginForm.submit();
+            }
+        });
+        $('#uname').textbox('textbox').focus();
+
+    });
+    var LoginForm = {
+        submit:function() {
+            $('#fill-form').form('submit', {
+                url: app.root + '/login/login',
+                success: function (data) {
+                    data = jQuery.parseJSON(data);
+                    if (data.success) {
+                        window.location.href="/web-admin/index" ;
+                    }
+                    else {
+                        $.messager.alert('信息提示', data.detail, 'error');
+                    }
+                }
+            }) ;
+        }
+    };
+</script>
+<style>
+    table td{
+        padding: 8px 0px;
+    }
+</style>

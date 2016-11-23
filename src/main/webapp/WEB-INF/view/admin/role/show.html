@@ -1,0 +1,274 @@
+<%
+include("/view/common/common.nav.html"){}
+%>
+<div class="easyui-layout" data-options="fit:true">
+	<!-- Begin of toolbar -->
+	<div id="wu-toolbar-1">
+		<div class="wu-toolbar-button">
+			<a href="#" id="btnAdd1" class="easyui-linkbutton" >添加</a>
+			<a href="#" id="btnDel1" class="easyui-linkbutton" >删除</a>
+		</div>
+		<div class="wu-toolbar-search">
+			<form id="queryForm1">
+				<label>角色名：</label><input class="easyui-textbox" name="txtName" style="width:150px">
+				<label>角色编码：</label><input class="easyui-textbox" name="rCode" style="width:150px">
+				<label>起始时间：</label><input  class="Wdate" type="text" onFocus="WdatePicker({skin:'whyGreen',dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false,readOnly:true})" name="startTime" style="width:150px">
+				<label>结束时间：</label><input class="Wdate" type="text" onFocus="WdatePicker({skin:'whyGreen',dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false,readOnly:true})" name="endTime" style="width:150px">
+				<a id="btnSearch1" >检索</a>
+				<a id="btnReset1" >重置</a>
+			</form>
+		</div>
+	</div>
+	<!-- End of toolbar -->
+	<table id="dg-data1" class="easyui-datagrid" toolbar="#wu-toolbar-1"></table>
+</div>
+<!-- Begin of easyui-dialog -->
+<div id="form-dialog1" style="width:400px; padding:10px;">
+	<form id="fill-form1" method="post">
+		<table>
+			<tr>
+				<td width="60" align="right">角色名:</td>
+				<td><input id="txtName" type="text" name="txt_name" class="easyui-textbox"/></td>
+			</tr>
+			<tr>
+				<td width="60" align="right">角色编码:</td>
+				<td><input id="rCode" type="text" name="r_code" class="easyui-textbox"/></td>
+			</tr>
+			<tr>
+				<td width="60" align="right">备注:</td>
+				<td><input id="remark" type="text" name="remark" class="easyui-textarea"/></td>
+			</tr>
+			<tr>
+				<td>
+					<input type="hidden" name="rid" />
+					<input type="hidden" name="create_time" />
+				</td>
+			</tr>
+		</table>
+	</form>
+</div>
+<div id="dgMenu" style="width:400px; padding:10px;">
+	<div class="">
+		<ul id="treeMenu" class="ztree"></ul>
+		<input type="hidden" id="menuRid"/>
+	</div>
+</div>
+<style>
+	ul.ztree {
+		margin-top: 10px;
+		border: 1px solid #617775;
+		background: #f0f6e4;
+		width: 98%;
+		height: 260px;
+		overflow-y: auto;
+		overflow-x: auto;
+	}
+</style>
+<script type="text/javascript" src="script/common/abnormal-crud.js"></script>
+<!-- End of easyui-dialog -->
+<script type="text/javascript">
+	//本页初始化
+	var Init = {
+		form:{
+			//新增/修改的表单字段初始化
+			txtName:function(){
+				$('#txtName').textbox({
+					required:true,
+					prompt:'20个字符以内',
+					validType:'name',
+					width:150,
+					missingMessage:'请输入角色名'
+				});
+			},
+			rCode:function(){
+				$('#rCode').textbox({
+					required:true,
+					width:150,
+					prompt:'请输入角色编码',
+					validType:'pwd',
+					missingMessage:'请输入角色编码'
+				});
+			},
+			remark:function(){
+				$('#remark').textbox({
+					width:150,
+					height:50,
+					prompt:'备注信息',
+					multiline:true
+				});
+			}
+		},
+		ztree:{
+			menu:function(){
+				$.ajax({
+					url: 'menu/getZtreeAll',
+					type: 'post',
+					dataType: 'json',
+					success: function (data) {
+
+						if (data.success) {
+							var setting = {
+								data: {
+									simpleData: {
+										enable: true
+									}
+								},
+								check: {
+									enable: true,
+									chkStyle: "checkbox"
+								},
+								data: {
+									simpleData: {
+										enable: true
+									}
+								}
+							};
+							var zNodes = data.data ;
+							$.fn.zTree.init($("#treeMenu"), setting, zNodes);
+						}
+					}
+				});
+			}
+
+		}
+	};
+	//datagrid数据列
+	var Grid = {
+		getColumns : function() {
+			return [[
+				{ field:'rid',checkbox:true},
+				{ field:'txt_name',title:'角色名',resizable:false},
+				{ field:'r_code',title:'角色编码',resizable:false},
+				{ field:'create_time',title:'创建时间',resizable:false},
+				{ field:'remark',title:'备注',resizable:false},
+				{ field:'_opt',title:'操作',resizable:false,
+					formatter: function (value, row, index) {
+						return '<a href="#" style="color:blue" onclick="AbCRUD.edit(' + row.rid + ')">修改</a> |'
+						+ ' <a href="#" style="color:blue" onclick="Client.editMenu(' + row.rid + ')">配置菜单</a>'
+					}
+				}
+			]]
+		}
+	};
+	//常量
+	var CONSTANT = {
+		_URL:{
+			_LIST:'role/list',
+			_SAVE:'role/save',
+			_UPDATE:'role/update',
+			_EDIT:'role/edit',
+			_DEL:'role/del'
+		},
+		_GRID:{
+			_IDFIELD:'rid',
+			_COLUMNS:Grid.getColumns()
+		},
+		_ID:{
+			_GRID:'dg-data1',
+			_QUERYFORM:'queryForm1',
+			_BTNSEARCH:'btnSearch1',
+			_BTNRESET:'btnReset1',
+			_FORMDIALOG:'form-dialog1',
+			_BTNADD:'btnAdd1',
+			_BTNDEL:'btnDel1',
+			_FILLFORM:'fill-form1',
+			_WUTOOLBAR:'wu-toolbar-1'
+
+		}
+	};
+	$(function(){
+		AbCRUD.init(CONSTANT) ;
+
+		Init.form.rCode();
+		Init.form.remark();
+		Init.form.txtName();
+
+		Init.ztree.menu();
+	});
+</script>
+<script>
+	$(function(){
+		$('#dgMenu').dialog({
+			closed: true,
+			iconCls: 'icon-save',
+			closable: false,
+			shadow: true,
+			inline: false,
+			modal: true
+		});
+	});
+	var Client = {
+		editMenu:function(rid){
+			$('#menuRid').val(rid) ;
+			$('#dgMenu').dialog({
+				closed: false,
+				title: "选择菜单",
+				buttons: [{
+					text: '确定',
+					iconCls: 'icon-ok',
+					handler: function () {
+						var treeObj = $.fn.zTree.getZTreeObj("treeMenu");
+						var nodes = treeObj.getCheckedNodes(true);
+						var ary = [] ;
+						for(var i = 0 ;i < nodes.length ;i ++) {
+							ary.push(nodes[i].id) ;
+						}
+						$.ajax({
+							url: 'role/updateMenu',
+							type: 'post',
+							dataType: 'json',
+							data: {ids:ary,rid:$('#menuRid').val()},
+							success: function (data) {
+								if (data.success) {
+									$.messager.show({
+										title: "信息提示",
+										msg: data.msg,
+										timeout: 1500,
+										showType: 'fade'
+									});
+									$('#dgMenu').dialog('close');
+									$('#' + CONSTANT._ID._GRID).datagrid('reload');
+								}else {
+									$.messager.alert('信息提示', data.msg, 'error');
+								}
+							}
+						});
+					}
+				}, {
+					text: '取消',
+					iconCls: 'icon-cancel',
+					handler: function () {
+						$('#dgMenu').dialog('close');
+					}
+				}]
+			});
+
+			$.ajax({
+				url: 'role/getMenuIds',
+				type: 'post',
+				dataType: 'json',
+				data: {rid:rid},
+				success: function (data) {
+					if (data.success) {
+						var treeObj = $.fn.zTree.getZTreeObj("treeMenu");
+						treeObj.checkAllNodes(false);
+						var nodes =  treeObj.transformToArray(treeObj.getNodes());
+						var ids = data.data ;
+						for (var i = 0 ; i < nodes.length; i ++) {
+							for(var j = 0 ; j < ids.length ; j ++ ) {
+								if(ids[j] === nodes[i].id && nodes[i].pId !== null) {
+									treeObj.checkNode(nodes[i], true, true);
+									ids.splice(j,1);
+									break ;
+								}
+							}
+
+						}
+
+						treeObj.expandAll(true);
+					}
+				}
+			});
+		}
+	};
+</script>

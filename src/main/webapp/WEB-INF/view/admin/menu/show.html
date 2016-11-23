@@ -1,0 +1,189 @@
+<%
+include("/view/common/common.nav.html"){}
+%>
+<div class="easyui-layout" data-options="fit:true">
+	<!-- Begin of toolbar -->
+	<div id="wu-toolbar-2">
+		<div class="wu-toolbar-button">
+			<a href="#" id="btnAdd2" class="easyui-linkbutton" >添加</a>
+			<a href="#" id="btnDel2" class="easyui-linkbutton" >删除</a>
+		</div>
+		<div class="wu-toolbar-search">
+			<form id="queryForm2">
+				<label>菜单名：</label><input class="easyui-textbox" name="txtName" style="width:150px">
+				<label>起始时间：</label><input  class="Wdate" type="text" onFocus="WdatePicker({skin:'whyGreen',dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false,readOnly:true})" name="startTime" style="width:150px">
+				<label>结束时间：</label><input class="Wdate" type="text" onFocus="WdatePicker({skin:'whyGreen',dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false,readOnly:true})" name="endTime" style="width:150px">
+				<a id="btnSearch2" >检索</a>
+				<a id="btnReset2" >重置</a>
+			</form>
+		</div>
+	</div>
+	<!-- End of toolbar -->
+	<table id="dg-data2" class="easyui-datagrid" toolbar="#wu-toolbar-2"></table>
+</div>
+<!-- Begin of easyui-dialog -->
+<div id="form-dialog2" style="width:400px; padding:10px;">
+		<form id="fill-form2" method="post">
+		<table>
+			<tr>
+				<td width="60" align="right">菜单名:</td>
+				<td><input id="txt_name" type="text" name="txt_name" class="easyui-textbox"/></td>
+			</tr>
+			<tr>
+				<td align="right">父级菜单:</td>
+				<td><input id="pId" type="text" name="p_id" class="easyui-combobox" /></td>
+			</tr>
+			<tr>
+				<td width="60" align="right">url:</td>
+				<td><input id="url" type="text" name="url" class="easyui-textbox"/></td>
+			</tr>
+			<tr>
+				<td width="60" align="right">序号:</td>
+				<td><input id="seqNo" type="text" name="seq_no" class="easyui-numberspinner"/></td>
+			</tr>
+			<tr>
+				<td width="60" align="right">图标:</td>
+				<td><input id="iconClass" type="text" name="icon_class" class="easyui-textbox"/></td>
+			</tr>
+			<tr>
+				<td>
+					<input type="hidden" name="mid" />
+					<input type="hidden" name="create_time" />
+				</td>
+			</tr>
+		</table>
+	</form>
+</div>
+<script type="text/javascript" src="script/common/abnormal-crud.js"></script>
+<!-- End of easyui-dialog -->
+<script type="text/javascript">
+	//本页初始化
+	var Init = {
+		form:{
+			//新增/修改的表单字段初始化
+			txt_name:function(){
+				$('#txt_name').textbox({
+					required:true,
+					prompt:'请输入中文',
+					width:150,
+					missingMessage:'请输入菜单名'
+				});
+			},
+			pId:function(){
+				$('#pId').combobox({
+					required:true,
+					width:150,
+					prompt:'请选择父菜单',
+					missingMessage:'请选择父菜单',
+					value:0,
+					editable:false,
+					valueField: 'mid',
+					textField: 'txt_name',
+					loader: function (param, success, error) {
+						$.ajax({
+							url: 'menu/pList',
+							type: 'post',
+							dataType: 'json',
+							success: function (data) {
+								if (data.success) {
+									var ary = [
+										{
+											mid:0,
+											txt_name:'顶级菜单',
+											selected:true
+										}
+									] ;
+									success(ary.concat(data.data));
+								}
+							}
+						});
+					}
+				});
+			},
+			url:function(){
+				$('#url').textbox({
+					required:true,
+					prompt:'url地址',
+					validType:'name',
+					width:150,
+					missingMessage:'请输入url地址'
+				});
+			}
+			,
+			seqNo:function(){
+				$('#seqNo').numberspinner({
+					min: 0,
+					required:true,
+					value:0,
+					max: 4000,
+					width:150,
+					prompt:'选择序号',
+					missingMessage:'请输入序号'
+				});
+			},
+			iconClass:function(){
+				$('#iconClass').textbox({
+					required:true,
+					prompt:'图标class名称',
+					width:150,
+					missingMessage:'请输入图标class名称'
+				});
+			}
+
+		}
+	};
+	//datagrid数据列
+	var Grid = {
+		getColumns : function() {
+			return [[
+				{ field:'mid',checkbox:true},
+				{ field:'txt_name',title:'菜单名',resizable:false},
+				{ field:'p_id',title:'父级菜单',resizable:false},
+				{ field:'seq_no',title:'序号',resizable:false},
+				{ field:'url',title:'url',resizable:false},
+				{ field:'icon_class',title:'图标css类',resizable:false},
+				{ field:'create_time',title:'创建时间',resizable:false},
+				{ field:'_opt',title:'操作',resizable:false,
+					formatter: function (value, row, index) {
+						return '<a href="#" style="color:blue" onclick="AbCRUD.edit(' + row.mid + ')">修改</a>'
+					}
+				}
+			]]
+		}
+	};
+	//常量
+	var CONSTANT = {
+		_URL:{
+			_LIST:'menu/list',
+			_SAVE:'menu/save',
+			_UPDATE:'menu/update',
+			_DEL:'menu/del',
+			_EDIT:'menu/edit'
+		},
+		_GRID:{
+			_IDFIELD:'mid',
+			_COLUMNS:Grid.getColumns()
+		},
+		_ID:{
+			_GRID:'dg-data2',
+			_QUERYFORM:'queryForm2',
+			_BTNSEARCH:'btnSearch2',
+			_BTNRESET:'btnReset2',
+			_FORMDIALOG:'form-dialog2',
+			_BTNADD:'btnAdd2',
+			_BTNDEL:'btnDel2',
+			_FILLFORM:'fill-form2',
+			_WUTOOLBAR:'wu-toolbar-2'
+
+		}
+	};
+	$(function(){
+		AbCRUD.init(CONSTANT) ;
+
+		Init.form.txt_name();
+		Init.form.pId();
+		Init.form.url();
+		Init.form.seqNo();
+		Init.form.iconClass();
+	});
+</script>
