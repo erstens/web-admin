@@ -1,2 +1,8 @@
-# web-admin
-JFINAL+BEETL+EASYUI后台管理
+###WHAT
+
+ JFINAL+BEETL+EASYUI后台管理
+
+## HOW TO
+
+ -   Import x.sql
+ -   deploy in tomcat
